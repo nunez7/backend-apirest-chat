@@ -6,6 +6,7 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import edu.mx.utdelacosta.backend.chat.models.documents.Mensaje;
@@ -17,6 +18,9 @@ public class ChatController {
 	
 	@Autowired
 	private ChatService service;
+	
+	@Autowired
+	private SimpMessagingTemplate webSocket;
 	
 	@MessageMapping("/mensaje")
 	@SendTo("/chat/mensaje")
@@ -39,10 +43,10 @@ public class ChatController {
 		return username.concat(" está escribiendo...");
 	}
 	
-	/*@MessageMapping("/historial")
-	@SendTo("/chat/historial")
-	public String escribiendo(String username) {
-		return username.concat(" está escribiendo...");
-	}*/
+	//Metodo de historial personalizado por cada cliente
+	@MessageMapping("/historial")
+	public void historial(String clienteId) {
+		webSocket.convertAndSend("/chat/historial/"+clienteId, service.obtenerUltimosDiezMensajes());
+	}
 
 }
